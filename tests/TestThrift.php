@@ -53,8 +53,7 @@ class TestThrift extends TestCase
 
         $file = $parser->readThrift();
         print_r($file);
-
-
+        self::assertInternalType('array', $file);
     }
 
 

@@ -254,36 +254,33 @@ class ParserFunc
         return $value;
     }
 
-    public function readStringValue()
+    public function readStringValue(): string
     {
         $receiver = [];
         $start = '';
         while (true) {
             $byte = $this->manager->getOffsetChar();
             $this->manager->offsetForward();
-            if (count($receiver) > 0) {
+            if ($start) {
                 if ($byte === $start) {
-                    array_push($receiver, $byte);
                     $this->readSpace();
                     return implode('', $receiver);
-                } elseif ($byte === '\\') {
-                    array_push($receiver, $byte);
+                }
+                if ($byte === '\\') {
+                    $receiver[] = $byte;
                     $this->manager->offsetForward();
-                    array_push($receiver, $this->manager->getOffsetChar());
+                    $receiver[] = $this->manager->getOffsetChar();
                     $this->manager->offsetForward();
                 } else {
-                    array_push($receiver, $byte);
+                    $receiver[] = $byte;
                 }
+            } elseif ($byte === '"' || $byte === '\'') {
+                $start = $byte;
             } else {
-                if ($byte === '"' || $byte === '\'') {
-                    $start = $byte;
-                    array_push($receiver, $byte);
-                } else {
-                    throw new Exception('Unexpected token ILLEGAL');
-                }
+                throw new Exception('Unexpected token ILLEGAL');
             }
         }
-
+        return '';
     }
 
     public function readBooleanValue()

@@ -32,6 +32,7 @@ class ThriftService extends ThriftSubject
         $receiver = $this->parserFunc->readUntilThrow(function () {
             return $this->readServiceItem();
         }, 'name');
+        $this->parserFunc->readChar('}');
         return $receiver;
     }
 

@@ -11,10 +11,11 @@ class ParserCal
 
     public function __construct($path)
     {
-        $handle = fopen($path, "r");
-        $this->source = fread($handle, filesize($path));
-        $this->length = strlen($this->source);
-        fclose($handle);
+        $this->source = file_get_contents($path);
+        // remove comments, parser sometimes hags on it
+        $this->source = preg_replace('~#[^\\n]*\\n~ui', "\n", $this->source);
+        $this->source = preg_replace('~//[^\\n]*\\n~ui', "\n", $this->source);
+        $this->length = \strlen($this->source);
     }
 
 
@@ -34,8 +35,7 @@ class ParserCal
             $pos = $this->offset + $offset;
         }
 
-        $res = isset($this->source[$pos])?$this->source[$pos]:"";
-        return $res;
+        return $this->source[$pos] ?? '';
     }
 
     public function getOffsetStr($strlen)
@@ -43,14 +43,28 @@ class ParserCal
         return substr($this->source, $this->offset, $strlen);
     }
 
-    public function isNotEOF($offset = 0)
+    public function isNotEOF($offset = 0): bool
     {
-        return ($this->offset + $offset < $this->length) ? true : false;
+        return $this->offset + $offset < $this->length;
     }
 
     public function getCurrOffset()
     {
         return $this->offset;
+    }
+
+    public function getCurrLine(): int
+    {
+        return $this->getLineAt($this->offset);
+    }
+
+    public function getLineAt(int $pos): int
+    {
+        return mb_substr_count(
+            substr($this->source, 0, $pos),
+            "\n",
+            'utf-8'
+        );
     }
 
     public function setCurrOffset($offset)

@@ -10,10 +10,10 @@ class ThriftInclude extends ThriftSubject
     {
         $this->parserFunc->readSpace();
         $subject = $this->parserFunc->readKeyword('include');
-        $this->parserFunc->readScope();
+        $this->parserFunc->readSpace();
         $includePath = $this->parserFunc->readQuotation();
         $this->parserFunc->readSpace();
-        $name = 'ziliang';
+        $name = pathinfo($includePath, PATHINFO_FILENAME);
         return ['subject' => $subject, 'name' => $name, 'path' => $includePath];
     }
 }

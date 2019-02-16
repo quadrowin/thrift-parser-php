@@ -22,7 +22,7 @@ class ParserFunc
         $len = strlen($word);
         for ($i = 0; $i < $len; $i++) {
             if ($this->manager->getOffsetChar($i) != $word[$i]) {
-                throw new Exception("Unexcepted token " . $word);
+                throw new Exception('Unexcepted token ' . $word);
             }
         }
         $this->manager->offsetForward($len);
@@ -426,26 +426,24 @@ class ParserFunc
         }
     }
 
-    public function readQuotation()
+    public function readQuotation(): string
     {
-        if ($this->manager->getOffsetChar() === '"' || $this->manager->getOffsetChar() === '\'') {
-            $this->manager->offsetForward();
-        } else {
-            throw new Exception('include error');
-        }
-        $i = 0;
-        while ($this->manager->getOffsetChar($i) != '"' && $this->manager->getOffsetChar($i) !== '\'') {
-            $i++;
-        }
-        if ($this->manager->getOffsetChar($i) === '"' || $this->manager->getOffsetChar($i) === '\'') {
-            $value = $this->manager->getOffsetStr($i);
-            $i++;
-            $this->manager->setCurrOffset($i);
-            return $value;
-        } else {
-            throw new Exception('include error');
+        $startChar = $this->manager->getOffsetChar();
+        if ($startChar !== '"' && $startChar !== "'") {
+            throw new Exception('include error quatation start');
         }
 
+        $this->manager->offsetForward();
+        for ($i = 0; $this->manager->isNotEOF($i); $i++) {
+            $char = $this->manager->getOffsetChar($i);
+            if ($char === $startChar) {
+                $value = $this->manager->getOffsetStr($i);
+                $this->manager->offsetForward($i + 1);
+                return $value;
+            }
+        }
+
+        throw new Exception('include error quatation end');
     }
 
     public function readExtends()
